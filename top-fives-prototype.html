@@ -1,0 +1,1406 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Top Fives</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Caveat:wght@500;600;700&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500;700&display=swap');
+
+  :root{
+    /* marbled composition-book cover (outer background) */
+    --ink:#161615;
+    --ink-2:#232320;
+    /* notebook page (cards) */
+    --paper:#FAF7ED;
+    --paper-edge:#EFE9D6;
+    --text:#2B2A26;
+    --text-soft:#6E6A5C;
+    /* red margin line / "your" ink */
+    --you:#C0392B;
+    /* blue ballpoint ruled line / "everyone else's" ink */
+    --community:#3B5EA6;
+    --muted:#A39D89;
+    --line: rgba(43,42,38,0.14);
+    --rule: rgba(59,94,166,0.24);
+    --margin: rgba(192,57,43,0.4);
+  }
+
+  *{box-sizing:border-box;}
+
+  body{
+    margin:0;
+    background:var(--ink);
+    background-image:
+      radial-gradient(circle at 12% 8%, rgba(255,255,255,0.05) 0%, transparent 30%),
+      radial-gradient(circle at 88% 18%, rgba(255,255,255,0.04) 0%, transparent 26%),
+      radial-gradient(circle at 22% 82%, rgba(255,255,255,0.045) 0%, transparent 32%),
+      radial-gradient(circle at 78% 92%, rgba(255,255,255,0.035) 0%, transparent 28%),
+      radial-gradient(circle at 85% 14%, transparent 36px, rgba(150,110,70,0.10) 38px, rgba(150,110,70,0.10) 42px, transparent 44px),
+      radial-gradient(ellipse at 15% 0%, var(--ink-2) 0%, transparent 55%),
+      radial-gradient(ellipse at 85% 100%, var(--ink-2) 0%, transparent 55%);
+    min-height:100vh;
+    font-family:'Inter', sans-serif;
+    color:var(--paper);
+    padding:48px 20px 80px;
+  }
+
+  .wrap{max-width:560px; margin:0 auto;}
+
+  .topbar{display:flex; justify-content:space-between; align-items:flex-start; gap:16px; flex-wrap:wrap;}
+
+  .eyebrow{
+    font-family:'JetBrains Mono', monospace;
+    font-size:12px;
+    letter-spacing:0.14em;
+    text-transform:uppercase;
+    color:var(--muted);
+    margin:0 0 10px;
+  }
+
+  h1{
+    font-family:'Caveat', cursive;
+    font-weight:700;
+    font-size:58px;
+    line-height:0.95;
+    margin:0 0 14px;
+    letter-spacing:0;
+  }
+  h1 em{
+    position:relative;
+    font-style:normal;
+    font-weight:700;
+    color:var(--you);
+  }
+  h1 em::after{
+    content:'';
+    position:absolute;
+    left:-2px; right:-6px; bottom:-6px;
+    height:10px;
+    background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 200 14'%3E%3Cpath d='M2 9 Q 18 2, 34 9 T 66 9 T 98 9 T 130 9 T 162 9 T 198 9' stroke='%23C0392B' stroke-width='3.5' fill='none' stroke-linecap='round'/%3E%3C/svg%3E");
+    background-repeat:no-repeat;
+    background-size:100% 100%;
+    opacity:0.85;
+  }
+
+  .mylists-nav{
+    font-family:'Caveat', cursive;
+    font-size:17px;
+    font-weight:700;
+    color:var(--paper);
+    background:rgba(250,247,237,0.05);
+    border:1.5px dashed rgba(250,247,237,0.35);
+    padding:9px 16px;
+    border-radius:8px;
+    cursor:pointer;
+    display:flex;
+    align-items:center;
+    gap:8px;
+    white-space:nowrap;
+    margin-top:4px;
+    transform:rotate(-0.6deg);
+  }
+  .mylists-nav:hover{background:rgba(250,247,237,0.12);}
+  .mylists-nav .count{
+    font-family:'JetBrains Mono', monospace;
+    font-size:11px;
+    background:var(--you);
+    color:#fff;
+    border-radius:100px;
+    padding:2px 7px;
+  }
+
+  .sub{
+    font-size:15px;
+    color:#C9C6BC;
+    line-height:1.55;
+    max-width:440px;
+    margin:0 0 40px;
+  }
+
+  .section-label{
+    font-family:'JetBrains Mono', monospace;
+    font-size:11px;
+    letter-spacing:0.1em;
+    text-transform:uppercase;
+    color:var(--muted);
+    margin:0 0 14px;
+  }
+
+  .topic-search{
+    display:block;
+    width:100%;
+    font-family:'Inter', sans-serif;
+    font-size:14px;
+    color:var(--paper);
+    background:rgba(250,247,237,0.05);
+    border:1.5px dashed rgba(250,247,237,0.3);
+    border-radius:8px;
+    padding:9px 16px;
+    outline:none;
+    margin-bottom:12px;
+  }
+  .topic-search::placeholder{color:rgba(250,247,237,0.4);}
+  .topic-search:focus{border-color:rgba(250,247,237,0.55);}
+
+  .chips{display:flex; flex-wrap:wrap; gap:8px; margin-bottom:14px;}
+  .chips-empty{font-size:13px; color:var(--muted); margin:-4px 0 14px;}
+  .chip{
+    font-family:'Inter', sans-serif;
+    font-size:14px;
+    font-weight:500;
+    color:var(--paper);
+    background:rgba(250,247,237,0.05);
+    border:1.5px dashed rgba(250,247,237,0.3);
+    padding:9px 16px;
+    border-radius:8px;
+    cursor:pointer;
+    transition:background 0.15s, border-color 0.15s, transform 0.1s;
+  }
+  .chip:nth-child(3n+1){transform:rotate(-0.7deg);}
+  .chip:nth-child(3n+2){transform:rotate(0.5deg);}
+  .chip:nth-child(3n){transform:rotate(-0.3deg);}
+  .chip:hover{background:rgba(250,247,237,0.12); border-color:rgba(250,247,237,0.45);}
+  .chip:active{transform:scale(0.97);}
+  .chip.selected{background:var(--you); border:1.5px solid var(--you); color:#fff;}
+  .chip.chip-custom::after{content:' \270e new'; color:var(--muted); font-size:11px;}
+  .chip.chip-custom.selected::after{color:rgba(255,255,255,0.8);}
+
+  .custom-row{display:flex; gap:8px; margin-bottom:16px;}
+  .custom-row input{
+    flex:1;
+    font-family:'Inter', sans-serif;
+    font-size:14px;
+    color:var(--paper);
+    background:rgba(250,247,237,0.05);
+    border:1.5px dashed rgba(250,247,237,0.3);
+    border-radius:8px;
+    padding:9px 16px;
+    outline:none;
+  }
+  .custom-row input::placeholder{color:rgba(250,247,237,0.4);}
+  .custom-row input:focus{border-color:rgba(250,247,237,0.55);}
+  .custom-row button{
+    font-family:'Caveat', cursive;
+    font-size:17px;
+    font-weight:700;
+    color:var(--ink);
+    background:var(--paper);
+    border:none;
+    border-radius:8px;
+    padding:8px 20px;
+    cursor:pointer;
+  }
+  .custom-row button:hover{background:#fff;}
+
+  .custom-hint{font-size:12px; color:var(--muted); margin:0 0 44px;}
+
+  .card-zone{display:none;}
+  .card-zone.active{display:block;}
+
+  .topic-head{display:flex; align-items:baseline; justify-content:space-between; margin-bottom:16px; flex-wrap:wrap; gap:6px;}
+  .topic-head h2{
+    font-family:'Caveat', cursive;
+    font-weight:700;
+    font-size:34px;
+    margin:0;
+    color:var(--paper);
+  }
+  .topic-count{
+    font-family:'JetBrains Mono', monospace;
+    font-size:12px;
+    color:var(--muted);
+  }
+
+  .card{
+    background:
+      repeating-linear-gradient(to bottom, transparent 0px, transparent 31px, var(--rule) 32px, transparent 33px),
+      var(--paper);
+    border-radius:3px;
+    padding:8px 22px;
+    position:relative;
+    box-shadow: 0 20px 50px -20px rgba(0,0,0,0.55);
+    transform:rotate(-0.3deg);
+  }
+  .card::before{
+    content:'';
+    position:absolute;
+    left:44px; top:0; bottom:0;
+    width:2px;
+    background:var(--margin);
+  }
+  .card::after{
+    content:'';
+    position:absolute;
+    left:16px; top:26px;
+    width:7px; height:7px;
+    border-radius:50%;
+    background:var(--ink);
+    opacity:0.14;
+    box-shadow: 0 56px 0 var(--ink), 0 112px 0 var(--ink), 0 168px 0 var(--ink);
+  }
+
+  .row{
+    display:flex;
+    align-items:center;
+    gap:16px;
+    padding:16px 0;
+    border-bottom:1px solid var(--line);
+    position:relative;
+  }
+  .row:last-child{border-bottom:none;}
+
+  .rank{
+    font-family:'Caveat', cursive;
+    font-weight:700;
+    font-size:22px;
+    color:var(--text-soft);
+    width:30px;
+    height:30px;
+    line-height:28px;
+    text-align:center;
+    flex-shrink:0;
+    border:2px solid var(--text-soft);
+    border-radius:50%;
+    opacity:0.55;
+    transform:rotate(-3deg);
+  }
+
+  .field{flex:1; position:relative;}
+  .field input{
+    width:100%;
+    font-family:'Inter', sans-serif;
+    font-size:16px;
+    color:var(--text);
+    background:transparent;
+    border:none;
+    outline:none;
+    padding:6px 0;
+  }
+  .field input::placeholder{color:rgba(43,42,38,0.32);}
+
+  .suggest{
+    position:absolute;
+    top:100%; left:0; right:0;
+    background:var(--paper);
+    border:1.5px dashed var(--line);
+    border-radius:6px;
+    margin-top:4px;
+    box-shadow:0 12px 24px rgba(0,0,0,0.18);
+    z-index:5;
+    overflow:hidden;
+  }
+  .suggest-item{
+    padding:9px 14px;
+    font-size:14px;
+    color:var(--text);
+    cursor:pointer;
+    display:flex;
+    justify-content:space-between;
+    gap:8px;
+  }
+  .suggest-item:hover{background:var(--paper-edge);}
+  .suggest-item span.n{color:var(--text-soft); font-family:'JetBrains Mono', monospace; font-size:11px;}
+
+  .actions{display:flex; gap:14px; margin-top:24px; align-items:center; flex-wrap:wrap;}
+  .btn-primary{
+    font-family:'Inter', sans-serif;
+    font-size:15px;
+    font-weight:600;
+    color:var(--paper);
+    background:var(--you);
+    border:none;
+    border-radius:6px;
+    padding:13px 26px;
+    cursor:pointer;
+    transition:transform 0.1s, opacity 0.15s;
+    transform:rotate(-0.5deg);
+  }
+  .btn-primary:hover{opacity:0.92;}
+  .btn-primary:active{transform:scale(0.98);}
+  .btn-primary:disabled{opacity:0.4; cursor:not-allowed;}
+  .btn-ghost{
+    font-family:'Caveat', cursive;
+    font-size:18px;
+    font-weight:600;
+    color:var(--muted);
+    background:none;
+    border:none;
+    cursor:pointer;
+    text-decoration:underline;
+    text-decoration-style:wavy;
+    text-underline-offset:4px;
+  }
+  .btn-ghost:hover{color:var(--paper);}
+
+  .hint{font-size:12px; color:var(--muted); margin-top:10px;}
+
+  .results-card{
+    background:
+      repeating-linear-gradient(to bottom, transparent 0px, transparent 31px, var(--rule) 32px, transparent 33px),
+      var(--paper);
+    border-radius:3px;
+    padding:6px 22px 22px 46px;
+    position:relative;
+    box-shadow: 0 20px 50px -20px rgba(0,0,0,0.55);
+    transform:rotate(0.25deg);
+  }
+  .results-card::before{
+    content:'';
+    position:absolute;
+    left:26px; top:0; bottom:0;
+    width:2px;
+    background:var(--margin);
+  }
+  .result-row{padding:16px 0; border-bottom:1px solid var(--line);}
+  .result-row:last-child{border-bottom:none;}
+  .result-top{display:flex; align-items:center; gap:10px; margin-bottom:8px;}
+  .result-rank{
+    font-family:'Caveat', cursive;
+    font-weight:700;
+    font-size:20px;
+    color:var(--you);
+    width:26px; height:26px; line-height:23px;
+    text-align:center;
+    border:2px solid var(--you);
+    border-radius:50%;
+    transform:rotate(4deg);
+    flex-shrink:0;
+  }
+  .result-name{font-family:'Inter', sans-serif; font-weight:600; font-size:16px; color:var(--text); flex:1;}
+  .result-pct{font-family:'JetBrains Mono', monospace; font-size:13px; color:var(--text-soft);}
+  .bar-track{height:7px; background:rgba(43,42,38,0.09); border-radius:3px; overflow:hidden; margin-left:36px; border:1px solid rgba(43,42,38,0.08);}
+  .bar-fill{height:100%; background:var(--community); border-radius:3px; transition:width 0.7s cubic-bezier(.2,.8,.2,1); width:0%;}
+  .bar-fill.rare{background:var(--you);}
+  .result-note{margin-left:36px; font-size:12px; color:var(--text-soft); margin-top:5px;}
+  .result-note.rare-note::before{content:'\2605  '; color:var(--you);}
+  .result-subnote{margin-left:36px; font-size:11px; color:var(--muted); margin-top:3px; font-family:'JetBrains Mono', monospace;}
+
+  .fun-fact{
+    margin-top:22px;
+    margin-left:6px;
+    padding:12px 16px;
+    background:rgba(59,94,166,0.06);
+    border:1.5px dashed rgba(59,94,166,0.35);
+    border-radius:3px;
+    font-size:13px;
+    font-family:'Caveat', cursive;
+    font-weight:500;
+    font-size:17px;
+    line-height:1.35;
+    color:var(--text-soft);
+    transform:rotate(-0.6deg);
+  }
+  .fun-fact strong{color:var(--text); font-weight:700;}
+
+  .status{font-size:13px; color:var(--muted); padding:20px 0; line-height:1.6;}
+
+  .footer-note{
+    margin-top:44px;
+    font-family:'Caveat', cursive;
+    font-size:16px;
+    font-weight:500;
+    color:var(--muted);
+    line-height:1.5;
+    border-top:1px dashed rgba(250,247,237,0.18);
+    padding-top:18px;
+  }
+
+  /* My Lists view */
+  .mylists-zone{display:none;}
+  .mylists-zone.active{display:block;}
+  .mylists-head{display:flex; align-items:baseline; justify-content:space-between; margin-bottom:16px; flex-wrap:wrap; gap:6px;}
+  .mylists-head h2{
+    font-family:'Caveat', cursive;
+    font-weight:700;
+    font-size:34px;
+    margin:0;
+    color:var(--paper);
+  }
+  .mylist-card{
+    background:
+      repeating-linear-gradient(to bottom, transparent 0px, transparent 27px, var(--rule) 28px, transparent 29px),
+      var(--paper);
+    border-radius:3px;
+    padding:16px 20px 18px 40px;
+    margin-bottom:14px;
+    position:relative;
+    box-shadow: 0 14px 34px -18px rgba(0,0,0,0.55);
+    transform:rotate(-0.3deg);
+  }
+  .mylist-card:nth-child(even){transform:rotate(0.35deg);}
+  .mylist-card::before{
+    content:'';
+    position:absolute;
+    left:24px; top:0; bottom:0;
+    width:2px;
+    background:var(--margin);
+  }
+  .mylist-head{display:flex; justify-content:space-between; align-items:center; cursor:pointer; gap:10px;}
+  .mylist-head-left{display:flex; align-items:baseline; gap:10px; min-width:0;}
+  .mylist-topic{font-family:'Caveat', cursive; font-weight:700; font-size:22px; color:var(--text); flex-shrink:0;}
+  .mylist-preview{font-size:12px; color:var(--text-soft); overflow:hidden; text-overflow:ellipsis; white-space:nowrap;}
+  .mylist-head-right{display:flex; align-items:center; gap:10px; flex-shrink:0;}
+  .mylist-time{font-family:'JetBrains Mono', monospace; font-size:11px; color:var(--text-soft);}
+  .mylist-chevron{font-size:12px; color:var(--muted); width:10px; text-align:center;}
+  .mylist-body{display:none; margin-top:4px; padding-top:6px; border-top:1px dashed var(--line);}
+  .mylist-card.open .mylist-body{display:block;}
+  .mylist-row{display:flex; align-items:center; gap:12px; padding:8px 0; font-size:14px;}
+  .mylist-rank{font-family:'Caveat', cursive; font-weight:700; font-size:15px; color:var(--text-soft); opacity:0.6; width:16px;}
+  .mylist-name{flex:1; color:var(--text);}
+  .mylist-pct{font-family:'JetBrains Mono', monospace; font-size:12px; color:var(--text-soft);}
+  .mylist-edit-btn{
+    font-family:'Inter', sans-serif;
+    font-size:12px;
+    font-weight:600;
+    color:var(--you);
+    background:none;
+    border:none;
+    padding:8px 0 2px;
+    margin-top:2px;
+    cursor:pointer;
+    text-decoration:underline;
+    text-underline-offset:3px;
+  }
+  .mylist-edit-btn:hover{opacity:0.75;}
+
+  /* Onboarding modal */
+  .howitworks-nav{
+    font-family:'Caveat', cursive;
+    font-size:17px;
+    font-weight:700;
+    color:var(--paper);
+    background:rgba(250,247,237,0.05);
+    border:1.5px dashed rgba(250,247,237,0.35);
+    padding:9px 16px;
+    border-radius:8px;
+    cursor:pointer;
+    white-space:nowrap;
+    margin-top:4px;
+    transform:rotate(0.5deg);
+  }
+  .howitworks-nav:hover{background:rgba(250,247,237,0.12);}
+  .topbar-actions{display:flex; gap:10px; flex-wrap:wrap; align-items:flex-start;}
+
+  .modal-overlay{
+    display:none;
+    position:fixed; inset:0;
+    background:rgba(10,10,9,0.72);
+    align-items:center;
+    justify-content:center;
+    padding:24px;
+    z-index:100;
+  }
+  .modal-overlay.active{display:flex;}
+  .modal-card{
+    background:
+      repeating-linear-gradient(to bottom, transparent 0px, transparent 31px, var(--rule) 32px, transparent 33px),
+      var(--paper);
+    border-radius:4px;
+    padding:26px 28px 24px 50px;
+    max-width:420px;
+    width:100%;
+    position:relative;
+    box-shadow:0 30px 70px -20px rgba(0,0,0,0.6);
+    transform:rotate(-0.4deg);
+  }
+  .modal-card::before{
+    content:'';
+    position:absolute;
+    left:28px; top:0; bottom:0;
+    width:2px;
+    background:var(--margin);
+  }
+  .modal-close{
+    position:absolute;
+    top:12px; right:14px;
+    background:none;
+    border:none;
+    font-size:22px;
+    line-height:1;
+    color:var(--text-soft);
+    cursor:pointer;
+    padding:4px 6px;
+  }
+  .modal-close:hover{color:var(--text);}
+  .modal-title{
+    font-family:'Caveat', cursive;
+    font-weight:700;
+    font-size:32px;
+    margin:2px 0 14px;
+    color:var(--text);
+  }
+  .modal-body p{
+    font-size:14px;
+    color:var(--text);
+    line-height:1.55;
+    margin:0 0 10px;
+  }
+  .modal-got-it{margin-top:10px;}
+
+  .fill-counter{
+    font-family:'JetBrains Mono', monospace;
+    font-size:12px;
+    color:var(--muted);
+    margin-left:auto;
+  }
+
+  .toast{
+    position:fixed; left:50%; bottom:28px; transform:translateX(-50%) translateY(20px) rotate(-1deg);
+    background:var(--paper); color:var(--text); font-family:'Caveat', cursive; font-size:17px; font-weight:700;
+    padding:11px 22px; border-radius:6px; border:1.5px dashed var(--margin); box-shadow:0 14px 34px rgba(0,0,0,0.4);
+    opacity:0; pointer-events:none; transition:opacity 0.25s, transform 0.25s; z-index:50;
+  }
+  .toast.show{opacity:1; transform:translateX(-50%) translateY(0) rotate(-1deg);}
+</style>
+</head>
+<body>
+<noscript>
+  <div style="max-width:480px;margin:60px auto;padding:20px 24px;background:#FAF7ED;color:#2B2A26;border-radius:6px;font-family:sans-serif;font-size:15px;line-height:1.5;">
+    <strong>This page needs JavaScript to work.</strong><br><br>
+    It looks like this is opening in a preview mode that blocks scripts (common when viewing a file attachment in Messages or Files). Tap the share icon and choose "Open in Safari" (or Chrome) to use it properly.
+  </div>
+</noscript>
+<div class="modal-overlay" id="onboardingOverlay">
+  <div class="modal-card">
+    <button class="modal-close" id="onboardingCloseBtn" aria-label="Close">&times;</button>
+    <p class="eyebrow">how this works</p>
+    <h2 class="modal-title">Everyone's got top fives.</h2>
+    <div class="modal-body">
+      <p>1. Pick any topic below &mdash; or type your own.</p>
+      <p>2. Fill in your top 5, from your #1 pick down to #5.</p>
+      <p>3. Submit to see how your picks stack up against everyone else who's ranked the same topic.</p>
+      <p>4. Come back to "My Lists" anytime to review or edit what you've submitted.</p>
+    </div>
+    <button class="btn-primary modal-got-it" id="onboardingGotItBtn">Got it</button>
+  </div>
+</div>
+<div class="wrap">
+  <div class="topbar">
+    <div>
+      <p class="eyebrow">a prototype &middot; mock data</p>
+      <h1>Everyone's got<br><em>top fives.</em></h1>
+    </div>
+    <div class="topbar-actions">
+      <button class="howitworks-nav" id="howItWorksBtn">How this works</button>
+      <button class="mylists-nav" id="myListsNavBtn">My Lists <span class="count" id="myListsCount">0</span></button>
+    </div>
+  </div>
+  <p class="sub">Rank anything. See how your picks stack up against everyone else who's ranked the same thing. This version runs on made-up placeholder data stored only in your browser tab &mdash; nothing here is shared with real people yet.</p>
+
+  <p class="section-label">Pick a topic</p>
+  <input type="text" class="topic-search" id="topicSearch" placeholder="Search topics&hellip;">
+  <div class="chips" id="chips"></div>
+  <p class="chips-empty" id="chipsEmpty" style="display:none;">No topics match "<span id="chipsEmptyQuery"></span>" &mdash; try creating it as a custom topic below.</p>
+  <div class="custom-row">
+    <input type="text" id="customTopic" placeholder="or type your own topic (e.g. pizza toppings)">
+    <button id="customGo">Go</button>
+  </div>
+  <p class="custom-hint">Custom topics you start get added to the list above for the rest of this session. If something close already exists (like "Pizza Topping" vs. "Pizza Toppings"), you'll be routed to it instead of creating a duplicate.</p>
+
+  <div class="card-zone" id="zone">
+    <div class="topic-head">
+      <h2 id="topicTitle"></h2>
+      <span class="topic-count" id="topicCount"></span>
+    </div>
+
+    <div id="formView">
+      <div class="card" id="formCard"></div>
+      <div class="actions">
+        <button class="btn-primary" id="submitBtn">Rank it</button>
+        <button class="btn-ghost" id="clearBtn">Clear</button>
+        <button class="btn-ghost" id="cancelEditBtn" style="display:none;">Cancel</button>
+        <span class="fill-counter" id="fillCounter"></span>
+      </div>
+      <p class="hint" id="formHint">Start typing to see what others have already picked.</p>
+    </div>
+
+    <div id="resultsView" style="display:none;">
+      <p class="hint" id="resultsIntro" style="display:none;"></p>
+      <div class="results-card" id="resultsCard"></div>
+      <div class="actions">
+        <button class="btn-ghost" id="editListBtn">Edit your list</button>
+        <button class="btn-ghost" id="shareBtn">Share your list &#8599;</button>
+        <button class="btn-ghost" id="viewMyListsBtn">See your lists &rarr;</button>
+        <button class="btn-ghost" id="againBtn">Try another topic &#8599;</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="mylists-zone" id="myListsZone">
+    <div class="mylists-head">
+      <h2>Your lists</h2>
+      <span class="topic-count" id="myListsSubcount"></span>
+    </div>
+    <div id="myListsContent"></div>
+    <div class="actions">
+      <button class="btn-ghost" id="closeMyListsBtn">&larr; Back</button>
+    </div>
+  </div>
+
+  <p class="footer-note">Prototype note (stage 1): this version runs entirely in your browser on seeded placeholder data. Submitting updates the numbers live for this session, but nothing is saved anywhere &mdash; refreshing the page resets everything back to the starting seed data. A later version would reconnect this to a real shared backend so different people actually see each other's lists.</p>
+</div>
+
+<script>
+/* ---------------------------------------------------------
+   Seed data: fake but realistic-looking starting entries so
+   no topic feels like a dead empty room. Counts update live
+   in-session as you submit; they reset on page refresh.
+--------------------------------------------------------- */
+const SEED = {
+  "Movies": {totalLists:47, items:[
+    ["The Godfather",34],["Parasite",29],["Pulp Fiction",27],["Everything Everywhere All at Once",21],
+    ["Spirited Away",24],["The Dark Knight",22],["Goodfellas",18],["The Shawshank Redemption",19],
+    ["La La Land",15],["Fight Club",16],["Whiplash",13],["Moonlight",11]
+  ]},
+  "Musicians": {totalLists:38, items:[
+    ["Beyoncé",26],["Kendrick Lamar",24],["Fleetwood Mac",22],["The Beatles",21],["Radiohead",20],
+    ["Frank Ocean",19],["SZA",17],["Stevie Wonder",15],["Mitski",14],["Tame Impala",12]
+  ]},
+  "Foods": {totalLists:52, items:[
+    ["Pizza",41],["Tacos",33],["Sushi",30],["Ramen",27],["Mac and Cheese",24],["Dumplings",22],
+    ["Pho",20],["Pad Thai",19],["BBQ Ribs",18],["Croissants",16]
+  ]},
+  "Athletes": {totalLists:31, items:[
+    ["Simone Biles",22],["Lionel Messi",21],["Serena Williams",20],["LeBron James",19],
+    ["Usain Bolt",17],["Michael Jordan",18],["Michael Phelps",14],["Tom Brady",12]
+  ]},
+  "Books": {totalLists:29, items:[
+    ["1984",19],["Pride and Prejudice",17],["The Song of Achilles",16],["One Hundred Years of Solitude",15],
+    ["Beloved",13],["East of Eden",12],["Norwegian Wood",10],["Just Mercy",9]
+  ]},
+  "TV shows": {totalLists:44, items:[
+    ["Breaking Bad",31],["Succession",27],["The Wire",26],["The Sopranos",24],["Fleabag",22],
+    ["Chernobyl",15],["Community",17],["Atlanta",13]
+  ]},
+  "Video games": {totalLists:36, items:[
+    ["The Legend of Zelda: Breath of the Wild",24],["Elden Ring",22],["Minecraft",20],
+    ["Red Dead Redemption 2",19],["Portal 2",17],["Hades",16],["Animal Crossing: New Horizons",14],["Disco Elysium",10]
+  ]},
+  "Travel spots": {totalLists:33, items:[
+    ["Kyoto, Japan",19],["New Zealand's South Island",16],["Lisbon, Portugal",15],["Oaxaca, Mexico",13],
+    ["Banff, Canada",14],["Reykjavik, Iceland",12],["Cape Town, South Africa",11],["Marrakech, Morocco",10]
+  ]}
+};
+
+let TOPICS = Object.keys(SEED);
+let customTopicSlugs = new Set();
+let DB = {};
+// One record per topic, keyed by slug: { topic, slug, entries:[{name,norm,rankIdx}], ts }
+let MY_LISTS = {};
+let currentTopic = null, currentSlug = null, topicData = null;
+let editingRecord = null; // the saved record currently being edited, or null
+
+function slugify(s){
+  return s.trim().toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'')
+    .replace(/[^a-z0-9]+/g,'-').replace(/^-+|-+$/g,'');
+}
+function normalize(s){
+  return s.trim().toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'').replace(/\s+/g,' ');
+}
+function cleanDisplay(s){
+  return s.trim().replace(/\s+/g,' ');
+}
+// Auto-corrects a freshly typed topic name to Proper Case (e.g. "drinks"
+// -> "Drinks", "pizza toppings" -> "Pizza Toppings") without touching
+// words that already contain a capital letter — that's treated as
+// deliberate styling (e.g. "NBA", "iPhone", "McDonald's") and left alone.
+// Small connector words stay lowercase unless they're the first word.
+const TITLE_CASE_MINOR_WORDS = new Set(['a','an','and','as','at','but','by','for','in','nor','of','on','or','so','the','to','up','yet','vs','vs.']);
+function smartTitleCase(s){
+  return s.split(' ').map((word, i)=>{
+    if(!word) return word;
+    if(/[A-Z]/.test(word)) return word; // already has a capital — assume intentional
+    const lower = word.toLowerCase();
+    if(i !== 0 && TITLE_CASE_MINOR_WORDS.has(lower)) return lower;
+    return lower.charAt(0).toUpperCase() + lower.slice(1);
+  }).join(' ');
+}
+function levenshtein(a,b){
+  const m=a.length, n=b.length;
+  if(m===0) return n;
+  if(n===0) return m;
+  const dp = Array.from({length:m+1},()=>new Array(n+1).fill(0));
+  for(let i=0;i<=m;i++) dp[i][0]=i;
+  for(let j=0;j<=n;j++) dp[0][j]=j;
+  for(let i=1;i<=m;i++){
+    for(let j=1;j<=n;j++){
+      const cost = a[i-1]===b[j-1] ? 0 : 1;
+      dp[i][j] = Math.min(dp[i-1][j]+1, dp[i][j-1]+1, dp[i-1][j-1]+cost);
+    }
+  }
+  return dp[m][n];
+}
+
+// Fabricates a plausible #1-through-#5 breakdown for a seed item's total
+// count, front-loaded so popular items skew toward being someone's #1 pick.
+// This is just for realistic-looking starting numbers — real breakdowns
+// would come from actual submitted rank positions.
+function synthRankCounts(total){
+  const weights = [0.34, 0.26, 0.19, 0.13, 0.08];
+  const counts = weights.map(w => Math.round(total * w));
+  const diff = total - counts.reduce((a,b)=>a+b,0);
+  counts[0] = Math.max(0, counts[0] + diff);
+  return counts;
+}
+
+// Build the initial DB from SEED
+Object.entries(SEED).forEach(([topic, data])=>{
+  const slug = slugify(topic);
+  DB[slug] = {
+    totalLists: data.totalLists,
+    items: data.items.map(([name,count])=>({name, norm: normalize(name), count, rankCounts: synthRankCounts(count)}))
+  };
+});
+
+let lastResults = null, lastTotalLists = 0;
+let expandedMyListSlugs = new Set();
+
+/* ---------------- Topic picking ---------------- */
+
+let topicSearchQuery = '';
+
+// Live filter over the existing topic chips — plain substring match, no
+// creation/dedup logic involved. This is separate from the "type your own
+// topic" flow below, which commits a brand-new (or matched) topic.
+function renderChips(){
+  const chips = document.getElementById('chips');
+  const emptyMsg = document.getElementById('chipsEmpty');
+  const emptyQuerySpan = document.getElementById('chipsEmptyQuery');
+  chips.innerHTML = '';
+
+  const q = normalize(topicSearchQuery);
+  const visible = q ? TOPICS.filter(t => normalize(t).includes(q)) : TOPICS;
+
+  visible.forEach(t=>{
+    const c = document.createElement('div');
+    const slug = slugify(t);
+    c.className = 'chip' + (customTopicSlugs.has(slug) ? ' chip-custom' : '');
+    c.textContent = t;
+    c.classList.toggle('selected', t === currentTopic);
+    c.onclick = ()=> selectTopic(t);
+    chips.appendChild(c);
+  });
+
+  if(q && visible.length === 0){
+    emptyQuerySpan.textContent = cleanDisplay(topicSearchQuery);
+    emptyMsg.style.display = 'block';
+  } else {
+    emptyMsg.style.display = 'none';
+  }
+}
+
+document.getElementById('topicSearch').addEventListener('input', e=>{
+  topicSearchQuery = e.target.value;
+  renderChips();
+});
+
+document.getElementById('customGo').onclick = ()=>{
+  const v = document.getElementById('customTopic').value;
+  if(v.trim()){
+    selectTopic(cleanDisplay(v));
+    document.getElementById('customTopic').value = '';
+  }
+};
+document.getElementById('customTopic').addEventListener('keydown', e=>{
+  if(e.key==='Enter'){ e.preventDefault(); document.getElementById('customGo').click(); }
+});
+
+function showToast(msg){
+  let toast = document.getElementById('toast');
+  if(!toast){
+    toast = document.createElement('div');
+    toast.id = 'toast';
+    toast.className = 'toast';
+    document.body.appendChild(toast);
+  }
+  toast.textContent = msg;
+  toast.classList.add('show');
+  clearTimeout(showToast._t);
+  showToast._t = setTimeout(()=> toast.classList.remove('show'), 2800);
+}
+
+// Topic-level dedup: first checks for an exact match (ignoring case,
+// whitespace, accents — same as entry dedup), then a light fuzzy pass
+// for near-typos, before ever creating a brand new topic. This is what
+// makes a custom topic "self-sustaining": the first person to type it
+// creates it, and everyone after gets routed to that same one.
+function ensureTopic(rawTopic){
+  const slug = slugify(rawTopic);
+
+  const exact = TOPICS.find(t => slugify(t) === slug);
+  if(exact) return {slug: slugify(exact), name: exact, routed: exact !== rawTopic};
+
+  let best = null, bestDist = Infinity;
+  TOPICS.forEach(t=>{
+    const s = slugify(t);
+    const maxLen = Math.max(slug.length, s.length);
+    if(maxLen < 5) return; // skip fuzzy matching for very short topic names
+    const dist = levenshtein(slug, s);
+    if(dist <= 1 && dist < bestDist){ best = t; bestDist = dist; }
+  });
+  if(best) return {slug: slugify(best), name: best, routed: true};
+
+  const displayName = smartTitleCase(cleanDisplay(rawTopic));
+  DB[slug] = {totalLists:0, items:[]};
+  TOPICS.push(displayName);
+  customTopicSlugs.add(slug);
+  return {slug, name: displayName, routed: false};
+}
+
+// Only one submitted list per topic is allowed. This looks up whether
+// the current session already has a saved record for a given topic slug.
+function getMyRecordFor(slug){
+  return MY_LISTS[slug] || null;
+}
+
+// Recomputes a saved record's percentages against the *current* live
+// item counts (which may have shifted since it was submitted, since
+// other mock "lists" can still be simulated by re-picking topics).
+function computeLiveResults(record){
+  const db = DB[record.slug];
+  const totalLists = db.totalLists;
+  return record.entries.slice().sort((a,b)=>a.rankIdx-b.rankIdx).map(e=>{
+    const live = db.items.find(it => it.norm === e.norm);
+    const count = live ? live.count : 0;
+    const rankCount = live && live.rankCounts ? live.rankCounts[e.rankIdx] : 0;
+    return {name: e.name, norm: e.norm, count, rankIdx: e.rankIdx, rankCount};
+  });
+}
+
+// Shows a previously-saved list in the results view (read-only, not a
+// fresh submission) — used when re-selecting a topic you've already ranked.
+function showSavedResults(record){
+  currentTopic = record.topic;
+  currentSlug = record.slug;
+  topicData = DB[record.slug];
+  editingRecord = null;
+
+  document.getElementById('formView').style.display = 'none';
+  document.getElementById('resultsView').style.display = 'block';
+  const intro = document.getElementById('resultsIntro');
+  intro.style.display = 'block';
+  intro.textContent = `Here's your saved top 5 for ${currentTopic}. You can edit it any time this session.`;
+
+  updateCountLabel();
+  const liveResults = computeLiveResults(record);
+  renderResults(liveResults, topicData.totalLists);
+}
+
+// Enters edit mode for an already-submitted topic: pulls up the saved
+// picks pre-filled in the form so you can tweak instead of resubmitting.
+function openTopicForEdit(slug){
+  const record = MY_LISTS[slug];
+  if(!record) return;
+  currentTopic = record.topic;
+  currentSlug = record.slug;
+  topicData = DB[record.slug];
+  editingRecord = record;
+
+  hideMyLists();
+  renderChips();
+
+  document.getElementById('zone').classList.add('active');
+  document.getElementById('topicTitle').textContent = currentTopic;
+  document.getElementById('formView').style.display = 'block';
+  document.getElementById('resultsView').style.display = 'none';
+
+  updateCountLabel();
+  renderForm(record);
+  const zoneEl = document.getElementById('zone');
+  if(zoneEl.scrollIntoView) zoneEl.scrollIntoView({behavior:'smooth', block:'start'});
+}
+
+function selectTopic(rawTopic){
+  const resolved = ensureTopic(rawTopic);
+  const existingRecord = getMyRecordFor(resolved.slug);
+
+  currentTopic = resolved.name;
+  currentSlug = resolved.slug;
+  topicData = DB[currentSlug];
+
+  // Reset the topic search so the next time someone browses the chip
+  // list (e.g. after "try another topic"), they see the full list again.
+  topicSearchQuery = '';
+  document.getElementById('topicSearch').value = '';
+
+  hideMyLists();
+  renderChips();
+
+  document.getElementById('zone').classList.add('active');
+  document.getElementById('topicTitle').textContent = currentTopic;
+
+  updateCountLabel();
+
+  if(existingRecord){
+    // Already ranked this topic this session — show what's saved instead
+    // of a blank form, so you can't accidentally create a duplicate list.
+    showSavedResults(existingRecord);
+  } else {
+    document.getElementById('formView').style.display = 'block';
+    document.getElementById('resultsView').style.display = 'none';
+    renderForm();
+  }
+
+  const zoneEl = document.getElementById('zone');
+  if(zoneEl.scrollIntoView) zoneEl.scrollIntoView({behavior:'smooth', block:'start'});
+
+  if(resolved.routed){
+    showToast(`Matched to the existing topic "${resolved.name}"`);
+  } else if(existingRecord){
+    showToast(`You've already ranked ${currentTopic} — here's your saved list.`);
+  }
+}
+
+function updateCountLabel(){
+  document.getElementById('topicCount').textContent =
+    topicData.totalLists > 0
+      ? topicData.totalLists + ' list' + (topicData.totalLists===1?'':'s') + ' submitted so far'
+      : 'be the first to rank this';
+}
+
+/* ---------------- Form + autocomplete ---------------- */
+
+// `record` is optional: when editing a saved list, pass the record so
+// its picks pre-fill the matching rank slots and the form switches into
+// "update" mode (different button label + a Cancel option).
+function renderForm(record){
+  const card = document.getElementById('formCard');
+  card.innerHTML = '';
+  for(let i=1;i<=5;i++){
+    const row = document.createElement('div');
+    row.className = 'row';
+    row.innerHTML = `
+      <div class="rank">${i}</div>
+      <div class="field">
+        <input type="text" data-idx="${i}" placeholder="${placeholderFor(i)}" autocomplete="off">
+      </div>
+    `;
+    card.appendChild(row);
+  }
+  if(record){
+    record.entries.forEach(e=>{
+      const inp = card.querySelector(`input[data-idx="${e.rankIdx+1}"]`);
+      if(inp) inp.value = e.name;
+    });
+  }
+  card.querySelectorAll('input').forEach(inp=>{
+    inp.addEventListener('input', ()=>{ showSuggestions(inp); updateSubmitState(); });
+    inp.addEventListener('blur', ()=> setTimeout(()=>{
+      const s = inp.parentElement.querySelector('.suggest');
+      if(s) s.remove();
+    }, 150));
+  });
+
+  const submitBtn = document.getElementById('submitBtn');
+  const cancelBtn = document.getElementById('cancelEditBtn');
+  const formHint = document.getElementById('formHint');
+  if(record){
+    submitBtn.textContent = 'Update list';
+    cancelBtn.style.display = 'inline';
+    formHint.textContent = `Editing your saved list for ${record.topic}. Change any pick, then update — or cancel to keep what you had.`;
+  } else {
+    submitBtn.textContent = 'Rank it';
+    cancelBtn.style.display = 'none';
+    formHint.textContent = 'Start typing to see what others have already picked. Fill in all 5 to reveal your rarity scores.';
+  }
+  updateSubmitState();
+}
+
+// All 5 picks are required before the "reveal" (rarity scores / community
+// comparison) unlocks — a partial list shouldn't get the full payoff.
+// Keeps the submit button disabled and shows a live "x/5 filled" counter.
+function updateSubmitState(){
+  const submitBtn = document.getElementById('submitBtn');
+  const counter = document.getElementById('fillCounter');
+  if(!submitBtn || !counter) return;
+  const inputs = [...document.querySelectorAll('#formCard input')];
+  const filledCount = inputs.filter(inp => inp.value.trim()).length;
+  submitBtn.disabled = filledCount < 5;
+  counter.textContent = filledCount < 5 ? `${filledCount}/5 picks filled` : 'all 5 filled ✓';
+}
+
+// Clear just blanks the visible inputs in place — it does not re-render
+// the form, so it doesn't accidentally drop out of edit mode.
+document.getElementById('clearBtn').onclick = ()=>{
+  document.querySelectorAll('#formCard input').forEach(inp => inp.value = '');
+  updateSubmitState();
+};
+
+document.getElementById('cancelEditBtn').onclick = ()=>{
+  if(editingRecord){
+    showSavedResults(editingRecord);
+  }
+};
+
+function placeholderFor(i){
+  const examples = {
+    1:'your #1 pick',
+    2:'runner up',
+    3:'still great',
+    4:'honorable mention',
+    5:'rounding it out'
+  };
+  return examples[i];
+}
+
+function showSuggestions(inp){
+  const existing = inp.parentElement.querySelector('.suggest');
+  if(existing) existing.remove();
+  const val = normalize(inp.value);
+  if(!val || !topicData || !topicData.items.length) return;
+  const matches = topicData.items
+    .filter(it => it.norm.includes(val))
+    .sort((a,b)=> b.count - a.count)
+    .slice(0,5);
+  if(!matches.length) return;
+  const box = document.createElement('div');
+  box.className = 'suggest';
+  matches.forEach(m=>{
+    const row = document.createElement('div');
+    row.className = 'suggest-item';
+    row.innerHTML = `<span>${m.name}</span><span class="n">${m.count} pick${m.count===1?'':'s'}</span>`;
+    row.onmousedown = ()=>{ inp.value = m.name; box.remove(); };
+    box.appendChild(row);
+  });
+  inp.parentElement.appendChild(box);
+}
+
+/* ---------------- Dedup + submit ---------------- */
+
+function resolveEntry(displayName, items, rankIdx){
+  const norm = normalize(displayName);
+  let match = items.find(it => it.norm === norm);
+  if(!match){
+    // light fuzzy pass: catches near-typos (extra/missing letter) that
+    // survived exact case/whitespace/accent normalization above
+    let best = null, bestDist = Infinity;
+    items.forEach(it=>{
+      const maxLen = Math.max(norm.length, it.norm.length);
+      if(maxLen < 4) return;
+      const dist = levenshtein(norm, it.norm);
+      if(dist <= 1 && dist < bestDist){ best = it; bestDist = dist; }
+    });
+    if(best) match = best;
+  }
+  if(match){
+    match.count += 1;
+    if(!match.rankCounts) match.rankCounts = [0,0,0,0,0];
+    match.rankCounts[rankIdx] += 1;
+  } else {
+    const rankCounts = [0,0,0,0,0];
+    rankCounts[rankIdx] = 1;
+    match = {name: cleanDisplay(displayName), norm, count: 1, rankCounts};
+    items.push(match);
+  }
+  return match;
+}
+
+// Removes a previously-submitted pick's contribution to the community
+// counts. Used when editing a list, right before the new picks are
+// applied, so a swapped answer (e.g. Pizza -> Burger) doesn't leave a
+// phantom count behind or double-count anything.
+function retractEntry(norm, rankIdx, items){
+  const idx = items.findIndex(it => it.norm === norm);
+  if(idx === -1) return;
+  const it = items[idx];
+  it.count = Math.max(0, it.count - 1);
+  if(it.rankCounts) it.rankCounts[rankIdx] = Math.max(0, it.rankCounts[rankIdx] - 1);
+  if(it.count === 0) items.splice(idx, 1);
+}
+
+document.getElementById('submitBtn').onclick = ()=>{
+  const inputs = [...document.querySelectorAll('#formCard input')];
+  // keep each entry's original slot (0-4) so "X% have this at #N" refers
+  // to the position you actually typed it in, even if earlier slots were left blank
+  const filled = inputs.map((inp,i)=>({value: inp.value.trim(), rankIdx: i})).filter(e=>e.value);
+  // All 5 picks are required — the rarity/comparison "reveal" only unlocks
+  // once someone commits to a full list, not a partial one.
+  if(filled.length < 5) return;
+
+  const btn = document.getElementById('submitBtn');
+  const isEdit = !!editingRecord;
+  btn.disabled = true;
+  btn.textContent = isEdit ? 'Updating…' : 'Saving…';
+
+  // brief simulated delay so submitting still feels like a real action —
+  // this mock version never fails, unlike the earlier live-storage version
+  setTimeout(()=>{
+    const items = topicData.items;
+
+    // On an edit, first retract the old picks' contribution to counts
+    // before re-resolving the new ones — this is what lets you change
+    // Pizza -> Burger in place instead of creating a second list.
+    if(isEdit){
+      editingRecord.entries.forEach(e => retractEntry(e.norm, e.rankIdx, items));
+    }
+
+    const yourResults = [];
+    filled.forEach(f=>{
+      const match = resolveEntry(f.value, items, f.rankIdx);
+      yourResults.push({name: match.name, norm: match.norm, count: match.count, rankIdx: f.rankIdx, rankCount: match.rankCounts[f.rankIdx]});
+    });
+
+    // Only a genuinely new topic submission grows the "N lists submitted"
+    // total — edits reshuffle who picked what, they don't add a new list.
+    if(!isEdit){
+      topicData.totalLists += 1;
+    }
+    const newTotal = topicData.totalLists;
+
+    MY_LISTS[currentSlug] = {
+      topic: currentTopic,
+      slug: currentSlug,
+      entries: yourResults.map(r=>({name:r.name, norm:r.norm, rankIdx:r.rankIdx})),
+      ts: Date.now()
+    };
+    editingRecord = null;
+    document.getElementById('myListsCount').textContent = Object.keys(MY_LISTS).length;
+
+    renderResults(yourResults, newTotal);
+    const intro = document.getElementById('resultsIntro');
+    if(isEdit){
+      intro.style.display = 'block';
+      intro.textContent = `Updated! Here's your new top 5 for ${currentTopic}.`;
+    } else {
+      intro.style.display = 'none';
+    }
+
+    btn.disabled = false;
+    btn.textContent = 'Rank it';
+  }, 350);
+};
+
+document.getElementById('editListBtn').onclick = ()=>{
+  if(currentSlug) openTopicForEdit(currentSlug);
+};
+
+function renderResults(yourResults, totalLists){
+  document.getElementById('formView').style.display = 'none';
+  document.getElementById('resultsView').style.display = 'block';
+  document.getElementById('topicCount').textContent = totalLists + ' list' + (totalLists===1?'':'s') + ' submitted so far';
+
+  lastResults = yourResults;
+  lastTotalLists = totalLists;
+
+  const card = document.getElementById('resultsCard');
+  card.innerHTML = '';
+
+  yourResults.forEach(r=>{
+    const rankNum = r.rankIdx + 1;
+    const pct = Math.round((r.count / totalLists) * 100);
+    const rankPct = Math.round((r.rankCount / totalLists) * 100);
+    const rare = r.count === 1;
+    const row = document.createElement('div');
+    row.className = 'result-row';
+    row.innerHTML = `
+      <div class="result-top">
+        <span class="result-rank">${rankNum}</span>
+        <span class="result-name">${r.name}</span>
+        <span class="result-pct">${pct}%</span>
+      </div>
+      <div class="bar-track"><div class="bar-fill ${rare?'rare':''}" data-pct="${pct}"></div></div>
+      <div class="result-note ${rare?'rare-note':''}">${rare ? "you're the only one who's picked this — so far." : pct+"% of lists for this topic include it."}</div>
+      <div class="result-subnote">${rankPct}% of all lists have it at #${rankNum}</div>
+    `;
+    card.appendChild(row);
+  });
+
+  requestAnimationFrame(()=>{
+    setTimeout(()=>{
+      card.querySelectorAll('.bar-fill').forEach(el=>{
+        const pct = parseInt(el.dataset.pct, 10);
+        el.style.width = Math.max(pct,3) + '%';
+      });
+    }, 50);
+  });
+
+  const sorted = topicData.items.slice().sort((a,b)=>b.count-a.count);
+  if(sorted.length){
+    const top = sorted[0];
+    const fact = document.createElement('div');
+    fact.className = 'fun-fact';
+    fact.innerHTML = `<strong>${top.name}</strong> is the most-picked entry for ${currentTopic} so far, appearing in ${top.count} of ${totalLists} lists.`;
+    card.appendChild(fact);
+  }
+}
+
+function copyToClipboard(text){
+  if(navigator.clipboard && navigator.clipboard.writeText){
+    navigator.clipboard.writeText(text)
+      .then(()=> showToast('Copied your list to the clipboard!'))
+      .catch(()=> fallbackCopy(text));
+  } else {
+    fallbackCopy(text);
+  }
+}
+function fallbackCopy(text){
+  const ta = document.createElement('textarea');
+  ta.value = text;
+  ta.style.position = 'fixed';
+  ta.style.left = '-9999px';
+  document.body.appendChild(ta);
+  ta.focus();
+  ta.select();
+  try{
+    document.execCommand('copy');
+    showToast('Copied your list to the clipboard!');
+  }catch(e){
+    showToast('Could not copy — try selecting the text manually.');
+  }
+  document.body.removeChild(ta);
+}
+
+document.getElementById('shareBtn').onclick = ()=>{
+  if(!lastResults) return;
+  const lines = lastResults
+    .slice()
+    .sort((a,b)=> a.rankIdx - b.rankIdx)
+    .map(r => `${r.rankIdx+1}. ${r.name}`);
+  const text = `My Top 5 ${currentTopic}\n${lines.join('\n')}\n\n(Made with the Top Fives prototype — real shareable links come once this is live.)`;
+  copyToClipboard(text);
+};
+
+document.getElementById('againBtn').onclick = ()=>{
+  currentTopic = null;
+  editingRecord = null;
+  document.getElementById('resultsIntro').style.display = 'none';
+  topicSearchQuery = '';
+  document.getElementById('topicSearch').value = '';
+  renderChips();
+  document.getElementById('zone').classList.remove('active');
+  document.getElementById('customTopic').value = '';
+  window.scrollTo({top:0, behavior:'smooth'});
+};
+
+/* ---------------- My Lists ---------------- */
+
+function timeAgo(ts){
+  const s = Math.floor((Date.now()-ts)/1000);
+  if(s < 5) return 'just now';
+  if(s < 60) return s + 's ago';
+  const m = Math.floor(s/60);
+  if(m < 60) return m + 'm ago';
+  const h = Math.floor(m/60);
+  return h + 'h ago';
+}
+
+function openMyLists(){
+  document.getElementById('zone').classList.remove('active');
+  document.getElementById('myListsZone').classList.add('active');
+  currentTopic = null;
+  renderChips();
+  // the most recent submission always opens expanded; anything you've
+  // manually toggled open stays open too
+  const all = Object.values(MY_LISTS);
+  if(all.length){
+    const mostRecent = all.reduce((a,b)=> b.ts > a.ts ? b : a);
+    expandedMyListSlugs.add(mostRecent.slug);
+  }
+  renderMyLists();
+  const myListsEl = document.getElementById('myListsZone');
+  if(myListsEl.scrollIntoView) myListsEl.scrollIntoView({behavior:'smooth', block:'start'});
+}
+function hideMyLists(){
+  document.getElementById('myListsZone').classList.remove('active');
+}
+
+document.getElementById('myListsNavBtn').onclick = openMyLists;
+document.getElementById('viewMyListsBtn').onclick = openMyLists;
+document.getElementById('closeMyListsBtn').onclick = ()=>{
+  hideMyLists();
+  window.scrollTo({top:0, behavior:'smooth'});
+};
+
+function renderMyLists(){
+  const container = document.getElementById('myListsContent');
+  const subcount = document.getElementById('myListsSubcount');
+  container.innerHTML = '';
+
+  const all = Object.values(MY_LISTS);
+
+  if(all.length === 0){
+    subcount.textContent = '';
+    container.innerHTML = '<p class="status">You haven\'t ranked anything yet this session. Pick a topic above, submit your top 5, and it\'ll show up here — with live percentages you can watch shift as more lists come in.</p>';
+    return;
+  }
+
+  subcount.textContent = all.length + ' topic' + (all.length===1?'':'s') + ' ranked this session';
+
+  all.sort((a,b)=> b.ts - a.ts).forEach(entry=>{
+    const db = DB[entry.slug];
+    const totalLists = db.totalLists;
+    const isOpen = expandedMyListSlugs.has(entry.slug);
+    const card = document.createElement('div');
+    card.className = 'mylist-card' + (isOpen ? ' open' : '');
+
+    const sortedEntries = entry.entries.slice().sort((a,b)=> a.rankIdx - b.rankIdx);
+    const previewName = sortedEntries.length ? sortedEntries[0].name : '';
+    const previewExtra = sortedEntries.length > 1 ? ` +${sortedEntries.length - 1} more` : '';
+
+    let rowsHtml = '';
+    sortedEntries.forEach(e=>{
+      const live = db.items.find(it => it.norm === e.norm);
+      const count = live ? live.count : 0;
+      const pct = totalLists > 0 ? Math.round((count/totalLists)*100) : 0;
+      rowsHtml += `
+        <div class="mylist-row">
+          <span class="mylist-rank">${e.rankIdx+1}</span>
+          <span class="mylist-name">${e.name}</span>
+          <span class="mylist-pct">${pct}%</span>
+        </div>`;
+    });
+
+    card.innerHTML = `
+      <div class="mylist-head" data-slug="${entry.slug}">
+        <div class="mylist-head-left">
+          <span class="mylist-topic">${entry.topic}</span>
+          <span class="mylist-preview">${previewName}${previewExtra}</span>
+        </div>
+        <div class="mylist-head-right">
+          <span class="mylist-time">${timeAgo(entry.ts)}</span>
+          <span class="mylist-chevron">${isOpen ? '▾' : '▸'}</span>
+        </div>
+      </div>
+      <div class="mylist-body">
+        ${rowsHtml}
+        <button class="mylist-edit-btn" type="button">Edit this list</button>
+      </div>
+    `;
+    card.querySelector('.mylist-head').onclick = ()=>{
+      if(expandedMyListSlugs.has(entry.slug)) expandedMyListSlugs.delete(entry.slug);
+      else expandedMyListSlugs.add(entry.slug);
+      renderMyLists();
+    };
+    card.querySelector('.mylist-edit-btn').onclick = (e)=>{
+      e.stopPropagation();
+      openTopicForEdit(entry.slug);
+    };
+    container.appendChild(card);
+  });
+}
+
+/* ---------------- Onboarding modal ---------------- */
+
+function showOnboarding(){
+  document.getElementById('onboardingOverlay').classList.add('active');
+}
+function hideOnboarding(){
+  document.getElementById('onboardingOverlay').classList.remove('active');
+}
+document.getElementById('howItWorksBtn').onclick = showOnboarding;
+document.getElementById('onboardingCloseBtn').onclick = hideOnboarding;
+document.getElementById('onboardingGotItBtn').onclick = hideOnboarding;
+document.getElementById('onboardingOverlay').addEventListener('click', e=>{
+  if(e.target.id === 'onboardingOverlay') hideOnboarding();
+});
+document.addEventListener('keydown', e=>{
+  if(e.key === 'Escape') hideOnboarding();
+});
+
+/* ---------------- Init ---------------- */
+renderChips();
+showOnboarding();
+</script>
+</body>
+</html>
